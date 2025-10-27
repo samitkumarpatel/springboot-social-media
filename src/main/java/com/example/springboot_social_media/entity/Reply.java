@@ -1,5 +1,6 @@
 package com.example.springboot_social_media.entity;
 import jakarta.persistence.*;
+import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "replies")
+@Data
 public class Reply {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

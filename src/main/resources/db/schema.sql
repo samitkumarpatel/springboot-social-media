@@ -9,61 +9,61 @@
 
 -- Posts table
 CREATE TABLE posts (
-                       id SERIAL PRIMARY KEY,
-                       title VARCHAR(255) NOT NULL,
-                       content TEXT NOT NULL,
-                       author_id INTEGER NOT NULL, -- Assuming you have a users table
-                       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                       updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                       is_published BOOLEAN DEFAULT true,
-                       view_count INTEGER DEFAULT 0
+       id SERIAL PRIMARY KEY,
+       title VARCHAR(255) NOT NULL,
+       content TEXT NOT NULL,
+       author_id INTEGER NOT NULL, -- Assuming you have a users table
+       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+       updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+       is_published BOOLEAN DEFAULT true,
+       view_count INTEGER DEFAULT 0
 );
 
 -- Comments table (first level comments on posts)
 CREATE TABLE comments (
-                          id SERIAL PRIMARY KEY,
-                          post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-                          author_id INTEGER NOT NULL, -- Assuming you have a users table
-                          content TEXT NOT NULL,
-                          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                          is_deleted BOOLEAN DEFAULT false
+      id SERIAL PRIMARY KEY,
+      post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+      author_id INTEGER NOT NULL, -- Assuming you have a users table
+      content TEXT NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      is_deleted BOOLEAN DEFAULT false
 );
 
 -- Replies table (handles all levels of replies - to comments and to other replies)
 CREATE TABLE replies (
-                         id SERIAL PRIMARY KEY,
-                         post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-                         parent_comment_id INTEGER REFERENCES comments(id) ON DELETE CASCADE,
-                         parent_reply_id INTEGER REFERENCES replies(id) ON DELETE CASCADE,
-                         author_id INTEGER NOT NULL, -- Assuming you have a users table
-                         content TEXT NOT NULL,
-                         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                         is_deleted BOOLEAN DEFAULT false,
-                         depth_level INTEGER DEFAULT 1, -- Track nesting level for easier queries
-                         path TEXT, -- Materialized path for efficient hierarchical queries
+     id SERIAL PRIMARY KEY,
+     post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+     parent_comment_id INTEGER REFERENCES comments(id) ON DELETE CASCADE,
+     parent_reply_id INTEGER REFERENCES replies(id) ON DELETE CASCADE,
+     author_id INTEGER NOT NULL, -- Assuming you have a users table
+     content TEXT NOT NULL,
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+     is_deleted BOOLEAN DEFAULT false,
+     depth_level INTEGER DEFAULT 1, -- Track nesting level for easier queries
+     path TEXT, -- Materialized path for efficient hierarchical queries
 
-    -- Ensure a reply has either a parent comment or parent reply, but not both
-                         CONSTRAINT check_parent CHECK (
-                             (parent_comment_id IS NOT NULL AND parent_reply_id IS NULL) OR
-                             (parent_comment_id IS NULL AND parent_reply_id IS NOT NULL)
-                             )
+-- Ensure a reply has either a parent comment or parent reply, but not both
+     CONSTRAINT check_parent CHECK (
+         (parent_comment_id IS NOT NULL AND parent_reply_id IS NULL) OR
+         (parent_comment_id IS NULL AND parent_reply_id IS NOT NULL)
+         )
 );
 
 -- Likes table - tracks who liked what (polymorphic relationship)
 CREATE TABLE likes (
-                       id SERIAL PRIMARY KEY,
-                       user_id INTEGER NOT NULL, -- Assuming you have a users table
-                       likeable_type VARCHAR(20) NOT NULL, -- 'post', 'comment', or 'reply'
-                       likeable_id INTEGER NOT NULL, -- ID of the liked item
-                       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+   id SERIAL PRIMARY KEY,
+   user_id INTEGER NOT NULL, -- Assuming you have a users table
+   likeable_type VARCHAR(20) NOT NULL, -- 'post', 'comment', or 'reply'
+   likeable_id INTEGER NOT NULL, -- ID of the liked item
+   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
     -- Ensure likeable_type is valid
-                       CONSTRAINT check_likeable_type CHECK (likeable_type IN ('post', 'comment', 'reply')),
+   CONSTRAINT check_likeable_type CHECK (likeable_type IN ('post', 'comment', 'reply')),
 
     -- Ensure a user can only like the same item once
-                       CONSTRAINT unique_like_per_user UNIQUE (user_id, likeable_type, likeable_id)
+   CONSTRAINT unique_like_per_user UNIQUE (user_id, likeable_type, likeable_id)
 );
 
 -- Indexes for performance
@@ -117,6 +117,7 @@ CREATE TRIGGER trigger_update_reply_path
     BEFORE INSERT ON replies
     FOR EACH ROW
     EXECUTE FUNCTION update_reply_path();
+
 
 -- Function to get all replies in a hierarchical structure
 CREATE OR REPLACE FUNCTION get_replies_hierarchy(post_id_param INTEGER)
@@ -284,23 +285,23 @@ $$ LANGUAGE plpgsql;
 
 -- Sample data for testing
 INSERT INTO posts (title, content, author_id) VALUES
-                                                  ('My First Post', 'This is the content of my first post!', 1),
-                                                  ('Another Post', 'This is another post with some interesting content.', 2);
+      ('My First Post', 'This is the content of my first post!', 1),
+      ('Another Post', 'This is another post with some interesting content.', 2);
 
 INSERT INTO comments (post_id, author_id, content) VALUES
-                                                       (1, 2, 'Great post! I really enjoyed reading this.'),
-                                                       (1, 3, 'I have a different perspective on this topic.'),
-                                                       (2, 1, 'Thanks for sharing this information.');
+       (1, 2, 'Great post! I really enjoyed reading this.'),
+       (1, 3, 'I have a different perspective on this topic.'),
+       (2, 1, 'Thanks for sharing this information.');
 
 INSERT INTO replies (post_id, parent_comment_id, author_id, content) VALUES
-                                                                         (1, 1, 1, 'Thank you! I''m glad you found it interesting.'),
-                                                                         (1, 1, 3, 'I agree with the author''s response.'),
-                                                                         (1, 2, 1, 'I''d love to hear your perspective. Could you elaborate?');
+     (1, 1, 1, 'Thank you! I''m glad you found it interesting.'),
+     (1, 1, 3, 'I agree with the author''s response.'),
+     (1, 2, 1, 'I''d love to hear your perspective. Could you elaborate?');
 
 -- Reply to a reply (nested reply)
 INSERT INTO replies (post_id, parent_reply_id, author_id, content) VALUES
-                                                                       (1, 1, 2, 'You''re welcome! Looking forward to more posts like this.'),
-                                                                       (1, 3, 2, 'Sure! I think the main issue is...');
+       (1, 1, 2, 'You''re welcome! Looking forward to more posts like this.'),
+       (1, 3, 2, 'Sure! I think the main issue is...');
 
 -- Reply to a reply to a reply (deeper nesting)
 INSERT INTO replies (post_id, parent_reply_id, author_id, content) VALUES
@@ -309,21 +310,21 @@ INSERT INTO replies (post_id, parent_reply_id, author_id, content) VALUES
 -- Sample likes data
 INSERT INTO likes (user_id, likeable_type, likeable_id) VALUES
 -- Likes for posts
-(2, 'post', 1),
-(3, 'post', 1),
-(1, 'post', 2),
--- Likes for comments
-(1, 'comment', 1),
-(3, 'comment', 1),
-(2, 'comment', 2),
-(1, 'comment', 3),
--- Likes for replies
-(2, 'reply', 1),
-(3, 'reply', 1),
-(1, 'reply', 2),
-(2, 'reply', 3),
-(1, 'reply', 4),
-(3, 'reply', 5);
+    (2, 'post', 1),
+    (3, 'post', 1),
+    (1, 'post', 2),
+    -- Likes for comments
+    (1, 'comment', 1),
+    (3, 'comment', 1),
+    (2, 'comment', 2),
+    (1, 'comment', 3),
+    -- Likes for replies
+    (2, 'reply', 1),
+    (3, 'reply', 1),
+    (1, 'reply', 2),
+    (2, 'reply', 3),
+    (1, 'reply', 4),
+    (3, 'reply', 5);
 
 -- Example queries to test the schema
 

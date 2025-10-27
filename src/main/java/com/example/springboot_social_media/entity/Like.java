@@ -1,6 +1,7 @@
 package com.example.springboot_social_media.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "likes",
         uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "likeable_type", "likeable_id"}))
+@Data
 public class Like {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
