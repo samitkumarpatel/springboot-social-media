@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: springboot-social-media
+  datasource:
+    url: jdbc:postgres://localhost:5432/socialmediadb
+    username: dbuser
+    password: dbpassword
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: true
