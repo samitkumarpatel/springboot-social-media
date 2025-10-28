@@ -2,6 +2,7 @@ package com.example.springboot_social_media.controller;
 
 import com.example.springboot_social_media.dto.CreatePostRequest;
 import com.example.springboot_social_media.dto.LikeResponse;
+import com.example.springboot_social_media.dto.PostSummaryResponse;
 import com.example.springboot_social_media.dto.UpdatePostRequest;
 import com.example.springboot_social_media.entity.Like;
 import com.example.springboot_social_media.entity.LikeableType;
@@ -28,9 +29,9 @@ public class PostController {
     final LikeService likeService;
 
     @GetMapping
-    public ResponseEntity<List<Post>> getAllPosts() {
+    public ResponseEntity<List<PostSummaryResponse>> getAllPosts() {
         try {
-            List<Post> posts = postService.findAllPublishedPosts();
+            List<PostSummaryResponse> posts = postService.findAllPublishedPostsSummary();
             return ResponseEntity.ok(posts);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
