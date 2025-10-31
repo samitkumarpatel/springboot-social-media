@@ -3,6 +3,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,14 +21,17 @@ public class Reply {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
+    @JsonIgnore // Prevent embedding full post inside each reply
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
+    @JsonBackReference(value = "comment-replies")
     private Comment parentComment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_reply_id")
+    @JsonBackReference(value = "reply-children")
     private Reply parentReply;
 
     @Column(name = "author_id", nullable = false)
@@ -52,6 +58,7 @@ public class Reply {
     private String path;
 
     @OneToMany(mappedBy = "parentReply", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference(value = "reply-children")
     private List<Reply> childReplies = new ArrayList<>();
 
     // Transient field for like count - calculated via service

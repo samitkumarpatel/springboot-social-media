@@ -3,6 +3,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ public class Comment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
+    @JsonIgnore // Exclude full post from comment serialization
     private Post post;
 
     @Column(name = "author_id", nullable = false)
@@ -38,6 +41,7 @@ public class Comment {
     private Boolean isDeleted = false;
 
     @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference(value = "comment-replies")
     private List<Reply> replies = new ArrayList<>();
 
     // Transient field for like count - calculated via service

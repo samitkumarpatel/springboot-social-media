@@ -18,7 +18,8 @@ public class Like {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Enumerated(EnumType.STRING)
+    // Use converter to store lowercase value matching check constraint
+    @Convert(converter = com.example.springboot_social_media.entity.converter.LikeableTypeConverter.class)
     @Column(name = "likeable_type", nullable = false)
     private LikeableType likeableType;
 
