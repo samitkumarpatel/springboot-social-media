@@ -22,6 +22,7 @@ import java.util.List;
 @RequestMapping("/api/posts")
 @Validated
 @RequiredArgsConstructor
+@CrossOrigin
 public class PostController {
 
     final PostService postService;

@@ -20,6 +20,7 @@ import java.util.List;
 @RequestMapping("/api/posts/{postId}/comments/{commentId}/replies")
 @Validated
 @RequiredArgsConstructor
+@CrossOrigin
 public class ReplyController {
 
     final ReplyService replyService;
